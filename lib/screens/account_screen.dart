@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:dart_assincronismo/models/account.dart';
+import 'package:dart_assincronismo/services/account_dio_service.dart';
 import 'package:dart_assincronismo/services/account_service.dart';
 import 'package:http/http.dart';
 import 'package:uuid/uuid.dart';
 
 class AccountScreen {
   final AccountService _accountService = AccountService();
+  final AccountDioService dioService = AccountDioService();
 
   void initializeStream() {
     _accountService.streamInfos.listen((event) => print(event));
@@ -54,18 +56,20 @@ class AccountScreen {
   }
 
   Future<void> _getAllAccounts() async {
-    try {
-      List<Account> listAccounts = await _accountService.getAll();
-      print(listAccounts);
-    } on ClientException catch (clientException) {
-      print("Não foi possível alcançar o servidor, tente novamente.");
-      print(clientException.message);
-      print(clientException.uri);
-    } on Exception {
-      print("Recuperação dos dados falhou, tente novamente.");
-    } finally {
-      print("${DateTime.now()} | Ocorreu uma tentativa de consulta");
-    }
+    // try {
+    //   List<Account> listAccounts = await _accountService.getAll();
+    //   print(listAccounts);
+    // } on ClientException catch (clientException) {
+    //   print("Não foi possível alcançar o servidor, tente novamente.");
+    //   print(clientException.message);
+    //   print(clientException.uri);
+    // } on Exception {
+    //   print("Recuperação dos dados falhou, tente novamente.");
+    // } finally {
+    //   print("${DateTime.now()} | Ocorreu uma tentativa de consulta");
+    // }
+    List<Account> listAcc = await dioService.getAll();
+    print(listAcc);
   }
 
   Future<void> _addExampleAccount() async {
@@ -85,6 +89,7 @@ class AccountScreen {
       balance: balance,
     );
 
-    _accountService.addAccount(example);
+    // _accountService.addAccount(example);
+    await dioService.addAccount(example);
   }
 }
