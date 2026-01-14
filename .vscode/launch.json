@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "dart_assincronismo",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/main.dart",
+            "args": [],
+            "toolArgs": [],
+            "console": "terminal"
+        }
+    ]
+}
