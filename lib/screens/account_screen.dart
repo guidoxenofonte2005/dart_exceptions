@@ -73,6 +73,8 @@ class AccountScreen {
     String nameStr = stdin.readLineSync()!;
     print("Digite o saldo (R\$):");
     double balance = double.parse(stdin.readLineSync()!);
+    print("Digite o tipo de conta (R\$):");
+    String? accountType = stdin.readLineSync();
 
     String name = nameStr.split(' ')[0];
     String lastName = nameStr.split(' ')[1];
@@ -83,8 +85,9 @@ class AccountScreen {
       name: name,
       lastName: lastName,
       balance: balance,
+      accountType: accountType ?? "Brigadeiro",
     );
 
-    _accountService.addAccount(example);
+    await _accountService.addAccount(example);
   }
 }
