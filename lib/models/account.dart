@@ -1,4 +1,3 @@
-// "data class" ou "model"
 import 'dart:convert';
 
 class Account {
@@ -18,23 +17,22 @@ class Account {
 
   factory Account.fromMap(Map<String, dynamic> map) {
     return Account(
-      id: map["id"] as String,
-      name: map["name"] as String,
-      lastName: map["lastName"] as String,
-      balance: map["balance"] as double,
-      accountType: (map["accountType"] != null)
-          ? map["accountType"] as String
-          : null,
+      id: map['id'] as String,
+      name: map['name'] as String,
+      lastName: map['lastName'] as String,
+      balance: map['balance'] as double,
+      accountType:
+          (map['accountType'] != null) ? map['accountType'] as String : null,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      "id": id,
-      "name": name,
-      "lastName": lastName,
-      "balance": balance,
-      "accountType": accountType,
+      'id': id,
+      'name': name,
+      'lastName': lastName,
+      'balance': balance,
+      'accountType': accountType,
     };
   }
 
@@ -54,30 +52,28 @@ class Account {
     );
   }
 
-  String toJson(Account account) {
-    return json.encode(account.toMap());
-  }
+  String toJson() => json.encode(toMap());
 
-  factory Account.fromJson(String jsonStr) =>
-      Account.fromMap(json.decode(jsonStr));
-
-  @override
-  bool operator ==(covariant Account other) {
-    // usa covariant pra definir o subtipo de objeto, nesse caso account
-    if (identical(this, other)) return true;
-
-    return id == other.id &&
-        name == other.name &&
-        lastName == other.lastName &&
-        balance == other.balance;
-  }
-
-  @override
-  int get hashCode =>
-      id.hashCode ^ name.hashCode ^ lastName.hashCode ^ balance.hashCode;
+  factory Account.fromJson(String source) =>
+      Account.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
-    return "Conta $id;\n$name $lastName;\nSaldo: $balance\n";
+    return '\nConta $id\n$name $lastName\nSaldo: $balance\n';
+  }
+
+  @override
+  bool operator ==(covariant Account other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.name == name &&
+        other.lastName == lastName &&
+        other.balance == balance;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^ name.hashCode ^ lastName.hashCode ^ balance.hashCode;
   }
 }

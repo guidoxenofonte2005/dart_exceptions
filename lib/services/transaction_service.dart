@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dart_assincronismo/api_key.dart';
 import 'package:dart_assincronismo/exceptions/transaction_exceptions.dart';
@@ -8,17 +9,16 @@ import 'package:dart_assincronismo/services/account_service.dart';
 import 'package:dart_assincronismo/helpers/helper_taxes.dart';
 
 import 'package:http/http.dart';
-import 'package:uuid/uuid.dart';
 
 class TransactionService {
   final AccountService _accountService = AccountService();
   final String url =
       "https://api.github.com/gists/d3858aa4f950651416b0bb848baf7b2c";
 
-  Future<void> makeTransaction({
-    required String senderID,
-    required String receiverID,
-    required double ammount,
+  makeTransaction({
+    required String idSender,
+    required String idReceiver,
+    required double amount,
   }) async {
     List<Account> listAccount = await _accountService.getAll();
     if (listAccount.where((account) => account.id == senderID).isEmpty) {
@@ -31,8 +31,13 @@ class TransactionService {
     Account senderAcc = listAccount.firstWhere(
       (Account acc) => acc.id == senderID,
     );
-    Account receiverAcc = listAccount.firstWhere(
-      (Account acc) => acc.id == receiverID,
+
+    if (listAccounts.where((acc) => acc.id == idReceiver).isEmpty) {
+      return null;
+    }
+
+    Account receiverAccount = listAccounts.firstWhere(
+      (acc) => acc.id == idReceiver,
     );
 
     double taxes = calculateTaxesByAccount(senderAcc, ammount);
@@ -40,25 +45,31 @@ class TransactionService {
       throw InsufficientFundsException();
     }
 
-    senderAcc.balance -= ammount + taxes;
-    receiverAcc.balance += ammount;
+    if (senderAccount.balance < amount + taxes) {
+      return null;
+    }
 
-    listAccount[listAccount.indexWhere((account) => account.id == senderID)] =
-        senderAcc;
-    listAccount[listAccount.indexWhere((account) => account.id == receiverID)] =
-        receiverAcc;
+    senderAccount.balance -= (amount + taxes);
+    receiverAccount.balance += amount;
 
-    Uuid uuid = Uuid();
+    listAccounts[listAccounts.indexWhere(
+      (acc) => acc.id == senderAccount.id,
+    )] = senderAccount;
+
+    listAccounts[listAccounts.indexWhere(
+      (acc) => acc.id == receiverAccount.id,
+    )] = receiverAccount;
+
     Transaction transaction = Transaction(
-      transactionID: uuid.v4(),
-      senderAccountID: senderID,
-      receiverAccountID: receiverID,
+      id: (Random().nextInt(89999) + 10000).toString(),
+      senderAccountId: senderAccount.id,
+      receiverAccountId: receiverAccount.id,
       date: DateTime.now(),
-      ammount: ammount,
+      amount: amount,
       taxes: taxes,
     );
 
-    await _accountService.save(listAccount);
+    await _accountService.save(listAccounts);
     await addTransaction(transaction);
   }
 
@@ -67,7 +78,6 @@ class TransactionService {
 
     // List<dynamic> listDynamic = json.decode(response.body);
     Map<String, dynamic> mapResponse = json.decode(response.body);
-
     List<dynamic> listDynamic = [];
     if (mapResponse["files"]["transactions.json"] != null) {
       listDynamic = json.decode(
@@ -76,40 +86,42 @@ class TransactionService {
     }
 
     List<Transaction> listTransactions = [];
-    for (dynamic element in listDynamic) {
-      Transaction transaction = Transaction.fromMap(
-        element as Map<String, dynamic>,
-      );
+
+    for (dynamic dyn in listDynamic) {
+      Map<String, dynamic> mapTrans = dyn as Map<String, dynamic>;
+      Transaction transaction = Transaction.fromMap(mapTrans);
       listTransactions.add(transaction);
     }
 
     return listTransactions;
   }
 
-  Future<void> addTransaction(Transaction transaction) async {
+  addTransaction(Transaction trans) async {
     List<Transaction> listTransactions = await getAll();
-    listTransactions.add(transaction);
-    await _save(listTransactions);
+    listTransactions.add(trans);
+    save(listTransactions);
   }
 
-  Future<void> _save(List<Transaction> listTransactions) async {
-    List<Map<String, dynamic>> listMapTransactions = [];
+  save(List<Transaction> listTransactions) async {
+    List<Map<String, dynamic>> listMaps = [];
 
-    for (Transaction transaction in listTransactions) {
-      listMapTransactions.add(transaction.toMap());
+    for (Transaction trans in listTransactions) {
+      listMaps.add(trans.toMap());
     }
 
-    String content = json.encode(listMapTransactions);
+    String content = json.encode(listMaps);
 
     await post(
       Uri.parse(url),
-      headers: {"Authorization": "Bearer $GITHUB_API_KEY"},
+      headers: {
+        "Authorization": "Bearer $GITHUB_API_KEY",
+      },
       body: json.encode({
         "description": "accounts.json",
         "public": true,
         "files": {
-          "transactions.json": {"content": content},
-        },
+          "transactions.json": {"content": content}
+        }
       }),
     );
   }
