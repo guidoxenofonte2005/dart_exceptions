@@ -2,14 +2,11 @@ import 'package:dart_exceptions/screens/account_screen.dart';
 import 'package:dart_exceptions/services/transaction_service.dart';
 
 void main() {
-  TransactionService().makeTransaction(
-    idSender: "ID001",
-    idReceiver: "ID002",
-    amount: 5,
-  );
   // AccountScreen accountScreen = AccountScreen();
   // accountScreen.initializeStream();
   // accountScreen.runChatBot();
+  TransactionService transactionService = TransactionService();
+  transactionService.makeTransaction(senderID: "ID001", receiverID: "ID004", ammount: 40000.0);
 }
 
 // void main() {

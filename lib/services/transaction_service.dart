@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:dart_exceptions/api_key.dart';
-import 'package:dart_exceptions/helpers/helper_taxes.dart';
-import 'package:dart_exceptions/models/account.dart';
-import 'package:dart_exceptions/models/transaction.dart';
-import 'package:dart_exceptions/services/account_service.dart';
+import 'package:dart_assincronismo/api_key.dart';
+import 'package:dart_assincronismo/exceptions/transaction_exceptions.dart';
+import 'package:dart_assincronismo/models/account.dart';
+import 'package:dart_assincronismo/models/transaction.dart';
+import 'package:dart_assincronismo/services/account_service.dart';
+import 'package:dart_assincronismo/helpers/helper_taxes.dart';
+
 import 'package:http/http.dart';
 
 class TransactionService {
@@ -18,14 +20,16 @@ class TransactionService {
     required String idReceiver,
     required double amount,
   }) async {
-    List<Account> listAccounts = await _accountService.getAll();
-
-    if (listAccounts.where((acc) => acc.id == idSender).isEmpty) {
-      return null;
+    List<Account> listAccount = await _accountService.getAll();
+    if (listAccount.where((account) => account.id == senderID).isEmpty) {
+      throw SenderDoNotExistException();
     }
-
-    Account senderAccount = listAccounts.firstWhere(
-      (acc) => acc.id == idSender,
+    if (listAccount.where((account) => account.id == receiverID).isEmpty) {
+      throw ReceiverDoNotExistException();
+    }
+    
+    Account senderAcc = listAccount.firstWhere(
+      (Account acc) => acc.id == senderID,
     );
 
     if (listAccounts.where((acc) => acc.id == idReceiver).isEmpty) {
@@ -36,10 +40,10 @@ class TransactionService {
       (acc) => acc.id == idReceiver,
     );
 
-    double taxes = calculateTaxesByAccount(
-      sender: senderAccount,
-      amount: amount,
-    );
+    double taxes = calculateTaxesByAccount(senderAcc, ammount);
+    if (senderAcc.balance < ammount + taxes) {
+      throw InsufficientFundsException();
+    }
 
     if (senderAccount.balance < amount + taxes) {
       return null;
@@ -72,9 +76,14 @@ class TransactionService {
   Future<List<Transaction>> getAll() async {
     Response response = await get(Uri.parse(url));
 
+    // List<dynamic> listDynamic = json.decode(response.body);
     Map<String, dynamic> mapResponse = json.decode(response.body);
-    List<dynamic> listDynamic =
-        json.decode(mapResponse["files"]["transactions.json"]["content"]);
+    List<dynamic> listDynamic = [];
+    if (mapResponse["files"]["transactions.json"] != null) {
+      listDynamic = json.decode(
+        mapResponse["files"]["transactions.json"]["content"],
+      );
+    }
 
     List<Transaction> listTransactions = [];
 
