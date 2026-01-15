@@ -1,26 +1,30 @@
 import 'dart:io';
 
-import 'package:dart_assincronismo/models/account.dart';
-import 'package:dart_assincronismo/services/account_service.dart';
+import 'package:dart_exceptions/services/account_service.dart';
 import 'package:http/http.dart';
-import 'package:uuid/uuid.dart';
+
+import '../models/account.dart';
 
 class AccountScreen {
   final AccountService _accountService = AccountService();
 
   void initializeStream() {
-    _accountService.streamInfos.listen((event) => print(event));
+    _accountService.streamInfos.listen(
+      (event) {
+        print(event);
+      },
+    );
   }
 
   void runChatBot() async {
-    print("Bom dia. Meu nome é Chris!");
-    print("Prazer em tê-lo conosco!\n");
+    print("Bom dia! Eu sou o Lewis, assistente do Banco d'Ouro!");
+    print("Que bom te ter aqui com a gente.\n");
 
     bool isRunning = true;
     while (isRunning) {
-      print("Digite o número desejado.");
-      print("1 - Ver todas as contas");
-      print("2 - Adicionar nova conta");
+      print("Como eu posso te ajudar? (digite o número desejado)");
+      print("1 - 👀 Ver todas sua contas.");
+      print("2 - ➕ Adicionar nova conta.");
       print("3 - Sair\n");
 
       String? input = stdin.readLineSync();
@@ -40,54 +44,50 @@ class AccountScreen {
           case "3":
             {
               isRunning = false;
-              print("Até logo!");
+              print("Te vejo na próxima. 👋");
               break;
             }
           default:
             {
-              print("Comando inválido. Tente novamente.");
-              break;
+              print("Não entendi. Tente novamente.");
             }
         }
       }
     }
   }
 
-  Future<void> _getAllAccounts() async {
+  _getAllAccounts() async {
     try {
       List<Account> listAccounts = await _accountService.getAll();
       print(listAccounts);
     } on ClientException catch (clientException) {
-      print("Não foi possível alcançar o servidor, tente novamente.");
+      print("Não foi possível alcançar o servidor.");
+      print("Tente novamente mais tarde.");
       print(clientException.message);
       print(clientException.uri);
     } on Exception {
-      print("Recuperação dos dados falhou, tente novamente.");
+      print("Não consegui recuperar os dados da conta.");
+      print("Tente novamente mais tarde.");
     } finally {
-      print("${DateTime.now()} | Ocorreu uma tentativa de consulta");
+      print("${DateTime.now()} | Ocorreu uma tentativa de consulta.");
+      // Aqui vai rodar antes de fechar.
     }
+    // Aqui não vai rodar antes de fechar.
   }
 
-  Future<void> _addExampleAccount() async {
-    print("Digite o nome: ");
-    String nameStr = stdin.readLineSync()!;
-    print("Digite o saldo (R\$):");
-    double balance = double.parse(stdin.readLineSync()!);
-    print("Digite o tipo de conta (R\$):");
-    String? accountType = stdin.readLineSync();
+  _addExampleAccount() async {
+    try {
+      Account example = Account(
+        id: "ID555",
+        name: "Haley",
+        lastName: "Chirívia",
+        balance: 8001,
+        accountType: "Brigadeiro",
+      );
 
-    String name = nameStr.split(' ')[0];
-    String lastName = nameStr.split(' ')[1];
-
-    Uuid uuid = Uuid();
-    Account example = Account(
-      id: uuid.v4(),
-      name: name,
-      lastName: lastName,
-      balance: balance,
-      accountType: accountType ?? "Brigadeiro",
-    );
-
-    await _accountService.addAccount(example);
+      await _accountService.addAccount(example);
+    } on Exception {
+      print("Ocorreu um problema ao tentar adicionar.");
+    }
   }
 }

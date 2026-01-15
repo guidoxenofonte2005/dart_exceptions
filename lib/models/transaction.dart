@@ -1,93 +1,90 @@
 import 'dart:convert';
 
 class Transaction {
-  String transactionID;
-  String senderAccountID;
-  String receiverAccountID;
+  String id;
+  String senderAccountId;
+  String receiverAccountId;
   DateTime date;
-  double ammount;
+  double amount;
   double taxes;
-
   Transaction({
-    required this.transactionID,
-    required this.senderAccountID,
-    required this.receiverAccountID,
+    required this.id,
+    required this.senderAccountId,
+    required this.receiverAccountId,
     required this.date,
-    required this.ammount,
+    required this.amount,
     required this.taxes,
   });
 
-  factory Transaction.fromMap(Map<String, dynamic> map) {
+  Transaction copyWith({
+    String? id,
+    String? senderAccountId,
+    String? receiverAccountId,
+    DateTime? date,
+    double? amount,
+    double? taxes,
+  }) {
     return Transaction(
-      transactionID: map["transactionID"],
-      senderAccountID: map["senderAccountID"],
-      receiverAccountID: map["receiverAccountID"],
-      date: DateTime.parse(map["date"]),
-      ammount: map["ammount"],
-      taxes: map["taxes"],
+      id: id ?? this.id,
+      senderAccountId: senderAccountId ?? this.senderAccountId,
+      receiverAccountId: receiverAccountId ?? this.receiverAccountId,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      taxes: taxes ?? this.taxes,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      "transactionID": transactionID,
-      "senderAccountID": senderAccountID,
-      "receiverAccountID": receiverAccountID,
-      "date": date.toIso8601String(),
-      "ammount": ammount,
-      "taxes": taxes,
+    return <String, dynamic>{
+      'id': id,
+      'senderAccountId': senderAccountId,
+      'receiverAccountId': receiverAccountId,
+      'date': date.millisecondsSinceEpoch,
+      'amount': amount,
+      'taxes': taxes,
     };
   }
 
-  factory Transaction.fromJson(String jsonData) {
-    return Transaction.fromMap(json.decode(jsonData));
-  }
-
-  String toJson(Transaction transaction) {
-    return json.encode(transaction.toMap());
-  }
-
-  Transaction copyWith({
-    String? transactionID,
-    String? senderAccountID,
-    String? receiverAccountID,
-    DateTime? date,
-    double? ammount,
-    double? taxes,
-  }) {
+  factory Transaction.fromMap(Map<String, dynamic> map) {
     return Transaction(
-      transactionID: transactionID ?? this.transactionID,
-      senderAccountID: senderAccountID ?? this.senderAccountID,
-      receiverAccountID: receiverAccountID ?? this.receiverAccountID,
-      date: date ?? this.date,
-      ammount: ammount ?? this.ammount,
-      taxes: taxes ?? this.taxes,
+      id: map['id'] as String,
+      senderAccountId: map['senderAccountId'] as String,
+      receiverAccountId: map['receiverAccountId'] as String,
+      date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
+      amount: map['amount'] as double,
+      taxes: map['taxes'] as double,
     );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory Transaction.fromJson(String source) =>
+      Transaction.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() {
+    return 'Transaction(id: $id, senderAccountId: $senderAccountId, receiverAccountId: $receiverAccountId, date: $date, amount: $amount, taxes: $taxes)';
   }
 
   @override
   bool operator ==(covariant Transaction other) {
     if (identical(this, other)) return true;
 
-    return transactionID == other.transactionID &&
-        senderAccountID == other.senderAccountID &&
-        receiverAccountID == other.receiverAccountID &&
-        date == other.date &&
-        ammount == other.ammount &&
-        taxes == other.taxes;
+    return other.id == id &&
+        other.senderAccountId == senderAccountId &&
+        other.receiverAccountId == receiverAccountId &&
+        other.date == date &&
+        other.amount == amount &&
+        other.taxes == taxes;
   }
 
   @override
-  int get hashCode =>
-      transactionID.hashCode ^
-      senderAccountID.hashCode ^
-      receiverAccountID.hashCode ^
-      date.hashCode ^
-      ammount.hashCode ^
-      taxes.hashCode;
-
-  @override
-  String toString() {
-    return "\n$date | Transação $transactionID | Conta $senderAccountID => Conta $receiverAccountID;\nValor: R\$$ammount, Taxa: $taxes\n";
+  int get hashCode {
+    return id.hashCode ^
+        senderAccountId.hashCode ^
+        receiverAccountId.hashCode ^
+        date.hashCode ^
+        amount.hashCode ^
+        taxes.hashCode;
   }
 }
