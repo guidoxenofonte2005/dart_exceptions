@@ -27,7 +27,7 @@ class TransactionService {
     if (listAccount.where((account) => account.id == receiverID).isEmpty) {
       throw ReceiverDoNotExistException();
     }
-    
+
     Account senderAcc = listAccount.firstWhere(
       (Account acc) => acc.id == senderID,
     );
@@ -37,7 +37,11 @@ class TransactionService {
 
     double taxes = calculateTaxesByAccount(senderAcc, ammount);
     if (senderAcc.balance < ammount + taxes) {
-      throw InsufficientFundsException();
+      throw InsufficientFundsException(
+        sender: senderAcc,
+        amount: ammount,
+        taxes: taxes,
+      );
     }
 
     senderAcc.balance -= ammount + taxes;
