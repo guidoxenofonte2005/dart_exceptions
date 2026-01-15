@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:dart_assincronismo/models/account.dart';
-
 class Transaction {
   String transactionID;
   String senderAccountID;
@@ -24,7 +22,7 @@ class Transaction {
       transactionID: map["transactionID"],
       senderAccountID: map["senderAccountID"],
       receiverAccountID: map["receiverAccountID"],
-      date: map["date"],
+      date: DateTime.parse(map["date"]),
       ammount: map["ammount"],
       taxes: map["taxes"],
     );
@@ -35,7 +33,7 @@ class Transaction {
       "transactionID": transactionID,
       "senderAccountID": senderAccountID,
       "receiverAccountID": receiverAccountID,
-      "date": date,
+      "date": date.toIso8601String(),
       "ammount": ammount,
       "taxes": taxes,
     };

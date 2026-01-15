@@ -10,7 +10,7 @@ class AccountService {
   final StreamController<String> _streamController = StreamController<String>();
   Stream<String> get streamInfos => _streamController.stream;
 
-  String url = "https://api.github.com.br/gists/d3858aa4f950651416b0bb848baf7b2c";
+  String url = "https://api.github.com/gists/d3858aa4f950651416b0bb848baf7b2c";
 
   Future<List<Account>> getAll() async {
     Response response = await get(Uri.parse(url));
@@ -36,34 +36,7 @@ class AccountService {
     List<Account> listAccounts = await getAll();
     listAccounts.add(account);
 
-    List<Map<String, dynamic>> listContent = [];
-    for (Account account in listAccounts) {
-      listContent.add(account.toMap());
-    }
-
-    String content = json.encode(listContent);
-
-    Response response = await post(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $GITHUB_API_KEY"},
-      body: json.encode({
-        "description": "account.json",
-        "public": true,
-        "files": {
-          "accounts.json": {"content": content},
-        },
-      }),
-    );
-
-    if (response.statusCode.toString()[0] == "2") {
-      _streamController.add(
-        "${DateTime.now()} | Requisição de adição bem sucedida (${account.name}, ${response.statusCode})",
-      );
-    } else {
-      _streamController.add(
-        "${DateTime.now()} | Requisição de adição falha (${account.name})",
-      );
-    }
+    await save(listAccounts);
   }
 
   Future<Account> getAccountByID(String id) async {
@@ -98,34 +71,7 @@ class AccountService {
       return;
     }
 
-    List<Map<String, dynamic>> listMapAccount = [];
-    for (Account acc in listAccount) {
-      listMapAccount.add(acc.toMap());
-    }
-
-    String content = json.encode(listMapAccount);
-
-    Response response = await post(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $GITHUB_API_KEY"},
-      body: json.encode({
-        "description": "account.json",
-        "public": true,
-        "files": {
-          "accounts.json": {"content": content},
-        },
-      }),
-    );
-
-    if (response.statusCode.toString()[0] == "2") {
-      _streamController.add(
-        "${DateTime.now()} | Requisição de update bem sucedida (${account.id}, ${response.statusCode})",
-      );
-    } else {
-      _streamController.add(
-        "${DateTime.now()} | Requisição de update falha (${account.id})",
-      );
-    }
+    await save(listAccount);
   }
 
   void deleteAccount(String accountID) async {
@@ -147,8 +93,12 @@ class AccountService {
       return;
     }
 
+    await save(listAccount);
+  }
+
+  Future<void> save(List<Account> listAccounts, {String accountName = ""}) async {
     List<Map<String, dynamic>> listMapAccount = [];
-    for (Account acc in listAccount) {
+    for (Account acc in listAccounts) {
       listMapAccount.add(acc.toMap());
     }
 
@@ -168,11 +118,11 @@ class AccountService {
 
     if (response.statusCode.toString()[0] == "2") {
       _streamController.add(
-        "${DateTime.now()} | Requisição de deleção bem sucedida ($accountID, ${response.statusCode})",
+        "${DateTime.now()} | Requisição de salvamento bem sucedida ${response.statusCode})",
       );
     } else {
       _streamController.add(
-        "${DateTime.now()} | Requisição de deleção falha ($accountID)",
+        "${DateTime.now()} | Requisição de salvamento falha)",
       );
     }
   }
