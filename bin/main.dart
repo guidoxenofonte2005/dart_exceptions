@@ -6,7 +6,7 @@ void main() {
   // accountScreen.initializeStream();
   // accountScreen.runChatBot();
   TransactionService transactionService = TransactionService();
-  transactionService.makeTransaction(senderID: "ID001", receiverID: "ID004", ammount: 10.0);
+  transactionService.makeTransaction(senderID: "ID001", receiverID: "ID004", ammount: 40000.0);
 }
 
 // void main() {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dart_assincronismo/api_key.dart';
+import 'package:dart_assincronismo/exceptions/transaction_exceptions.dart';
 import 'package:dart_assincronismo/models/account.dart';
 import 'package:dart_assincronismo/models/transaction.dart';
 import 'package:dart_assincronismo/services/account_service.dart';
@@ -20,9 +21,13 @@ class TransactionService {
     required double ammount,
   }) async {
     List<Account> listAccount = await _accountService.getAll();
-    if (listAccount.where((account) => account.id == senderID).isEmpty) return;
-    if (listAccount.where((account) => account.id == receiverID).isEmpty) return;
-
+    if (listAccount.where((account) => account.id == senderID).isEmpty) {
+      throw SenderDoNotExistException();
+    }
+    if (listAccount.where((account) => account.id == receiverID).isEmpty) {
+      throw ReceiverDoNotExistException();
+    }
+    
     Account senderAcc = listAccount.firstWhere(
       (Account acc) => acc.id == senderID,
     );
@@ -31,7 +36,9 @@ class TransactionService {
     );
 
     double taxes = calculateTaxesByAccount(senderAcc, ammount);
-    if (senderAcc.balance < ammount + taxes) return;
+    if (senderAcc.balance < ammount + taxes) {
+      throw InsufficientFundsException();
+    }
 
     senderAcc.balance -= ammount + taxes;
     receiverAcc.balance += ammount;
@@ -58,12 +65,13 @@ class TransactionService {
   Future<List<Transaction>> getAll() async {
     Response response = await get(Uri.parse(url));
 
+    // List<dynamic> listDynamic = json.decode(response.body);
     Map<String, dynamic> mapResponse = json.decode(response.body);
 
     List<dynamic> listDynamic = [];
-    if (mapResponse["files"]["transaction.json"] != null) {
+    if (mapResponse["files"]["transactions.json"] != null) {
       listDynamic = json.decode(
-        mapResponse["files"]["transaction.json"]["content"],
+        mapResponse["files"]["transactions.json"]["content"],
       );
     }
 
