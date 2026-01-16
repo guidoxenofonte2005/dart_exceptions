@@ -1,4 +1,4 @@
-import 'package:dart_assincronismo/models/account.dart';
+import 'package:dart_exceptions/models/account.dart';
 
 class SenderDoNotExistException implements Exception {
   final String message;

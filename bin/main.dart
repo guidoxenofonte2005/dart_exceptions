@@ -1,16 +1,23 @@
-// import 'package:dart_assincronismo/screens/account_screen.dart';
-import 'package:dart_assincronismo/exceptions/transaction_exceptions.dart';
-import 'package:dart_assincronismo/services/transaction_service.dart';
+import 'package:dart_exceptions/screens/account_screen.dart';
+// import 'package:dart_exceptions/exceptions/transaction_exceptions.dart';
+// import 'package:dart_exceptions/services/transaction_service.dart';
 
 void main() {
-  TransactionService()
-      .makeTransaction(senderID: "ID001", receiverID: "ID004", ammount: 40000.0)
-      .catchError((e) {
-        print(e.message);
-        print(
-          "${e.sender.name} | Saldo total: R\$${e.sender.balance}, Saldo necessário: R\$${e.amount + e.taxes}",
-        );
-      }, test: (error) => error is InsufficientFundsException);
+  // TransactionService()
+  //     .makeTransaction(idSender: "ID001", idReceiver: "ID004", amount: 40000.0)
+  //     .catchError((e) {
+  //       print(e.message);
+  //       print(
+  //         "${e.sender.name} | Saldo total: R\$${e.sender.balance}, Saldo necessário: R\$${e.amount + e.taxes}",
+  //       );
+  //     }, test: (error) => error is InsufficientFundsException);
+  AccountScreen accountScreen = AccountScreen();
+  accountScreen.initializeStream();
+  accountScreen.runChatBot().catchError(
+    (e) {
+      print(e.message);
+    },
+  );
 }
 
 // void main() async {

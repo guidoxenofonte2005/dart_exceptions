@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_exceptions/api_key.dart';
+import 'package:dart_exceptions/exceptions/account_exceptions.dart';
 import 'package:dart_exceptions/models/account.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
@@ -65,5 +66,25 @@ class AccountService {
       _streamController
           .add("${DateTime.now()} | Requisição falhou ($accountName).");
     }
+  }
+
+  Future<Account> getAccountByName(String name) async {
+    List<Account> listAccounts = await getAll();
+
+    try {
+      List<String> names = name.split(' ');
+      String firstName = names.removeAt(0);
+      String lastName = names.toString();
+
+      for (Account acc in listAccounts) {
+        if (acc.name == firstName && acc.lastName == lastName) return acc;
+      }
+    } on AccountNameNotFoundException catch (e) {
+      print(e.message);
+    } on Exception {
+      print("Ocorreu um erro inesperado"); 
+    }
+    
+    throw AccountNameNotFoundException();
   }
 }
